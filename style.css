@@ -141,24 +141,95 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
 .interest-display { display: flex; flex-direction: column; align-items: center; gap: 2px; flex-shrink: 0; }
 .interest-val { font-family: 'Bebas Neue', sans-serif; font-size: 24px; color: var(--accent2); line-height: 1; }
 
-.board-wrap { flex: 1; display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 16px; }
+.board-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
 
 /* ─── BOARD ─────────────────────────────────── */
 .board {
   display: grid;
-  width: min(680px, 95%);
-  aspect-ratio: 1;
+  width: min(700px, 90vw, 90vh);
+  aspect-ratio: 1 / 1;
+  grid-template-columns: repeat(7, 1fr);
+  grid-template-rows: repeat(7, 1fr);
   position: relative;
-  gap: 3px;
+  gap: 4px;
+}
+
+.board-center-panel {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-width: 0;
+  min-height: 0;
+}
+
+.board-center-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(28px, 4vw, 54px);
+  color: var(--accent);
+  letter-spacing: 6px;
+  line-height: 1;
+}
+
+.board-center-turn {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 3px;
+}
+
+.board-center-players {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: 0 12px;
+}
+
+.board-center-player {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 5px 10px;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+}
+
+.board-center-dot {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
 }
 
 .tile {
   border: 1px solid var(--border);
   border-radius: 4px;
   background: var(--bg2);
-  display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
-  cursor: pointer; transition: border-color .2s, box-shadow .2s; position: relative; overflow: hidden;
-  text-align: center; padding: 4px 3px 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  cursor: pointer;
+  transition: border-color .2s, box-shadow .2s;
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+  padding: 4px 3px 28px;
+  min-width: 0;
+  min-height: 0;
 }
 .tile:hover { border-color: var(--muted); z-index: 5; }
 
