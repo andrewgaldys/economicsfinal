@@ -368,26 +368,26 @@ function renderBoard() {
     }
   }
 
-  // Center area (rows 1-5, cols 1-5) — title panel
-  const centerCell = board.children[1 * SIZE + 1];
-  centerCell.style.cssText = `
-    grid-column: 2 / 7; grid-row: 2 / 7;
-    background: var(--bg3); border: 1px solid var(--border); border-radius: 10px;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 10px;
-  `;
-  centerCell.innerHTML = `
-    <div style="font-family:'Bebas Neue',sans-serif;font-size:clamp(20px,2.8vw,34px);color:var(--accent);letter-spacing:4px;line-height:1">ECONOPOLY</div>
-    <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px">TURN ${G.turn} / ${G.maxTurns}</div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;padding:0 12px">
+    // Center area (rows 1-5, cols 1-5) — title panel
+  const centerPanel = document.createElement('div');
+  centerPanel.className = 'board-center-panel';
+  centerPanel.style.gridColumn = '2 / 7';
+  centerPanel.style.gridRow = '2 / 7';
+
+  centerPanel.innerHTML = `
+    <div class="board-center-title">ECONOPOLY</div>
+    <div class="board-center-turn">TURN ${G.turn} / ${G.maxTurns}</div>
+    <div class="board-center-players">
       ${G.players.map(p => `
-        <div style="display:flex;align-items:center;gap:5px;background:var(--bg);border:1px solid ${p.colorHex};border-radius:6px;padding:4px 8px">
-          <div style="width:12px;height:12px;border-radius:50%;background:${p.colorHex}"></div>
-          <span style="font-family:'DM Mono',monospace;font-size:9px;color:${p.colorHex}">${p.name.split(' ')[0]}</span>
+        <div class="board-center-player" style="border-color:${p.colorHex}">
+          <div class="board-center-dot" style="background:${p.colorHex}"></div>
+          <span style="color:${p.colorHex}">${p.name.split(' ')[0]}</span>
         </div>
       `).join('')}
     </div>
   `;
+
+  board.appendChild(centerPanel);
 
   // Map tile index → grid cell position (clockwise from bottom-left corner)
   // Bottom row left→right: (6,0),(6,1),(6,2),(6,3),(6,4),(6,5),(6,6) → tiles 0-6
