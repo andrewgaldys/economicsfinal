@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ECONOPOLY — Economic Simulation</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet"/>
+</head>
+<body>
+
+<!-- SETUP SCREEN -->
+<div id="setup-screen" class="screen active">
+  <div class="setup-bg"></div>
+  <div class="setup-container">
+    <div class="logo-block">
+      <div class="logo-eyebrow">THE REAL ECONOMY GAME</div>
+      <h1 class="logo-title">ECONOPOLY</h1>
+      <div class="logo-sub">Where Markets Move & Fortunes Shift</div>
+    </div>
+
+    <div class="setup-card">
+      <h2>CONFIGURE GAME</h2>
+
+      <div class="field-group">
+        <label>Number of Players</label>
+        <div class="pill-select" id="player-count-select">
+          <button class="pill active" data-val="2">2</button>
+          <button class="pill" data-val="3">3</button>
+          <button class="pill" data-val="4">4</button>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label>Game Length (turns per player)</label>
+        <div class="pill-select" id="turn-count-select">
+          <button class="pill" data-val="20">20</button>
+          <button class="pill active" data-val="30">30</button>
+          <button class="pill" data-val="40">40</button>
+        </div>
+      </div>
+
+      <div id="player-configs"></div>
+
+      <button class="btn-primary big" id="start-game-btn">START GAME →</button>
+    </div>
+  </div>
+</div>
+
+<!-- GAME SCREEN -->
+<div id="game-screen" class="screen">
+  <div class="game-layout">
+
+    <!-- LEFT: BOARD -->
+    <div class="board-panel">
+      <div class="board-header">
+        <div class="turn-info">
+          <span class="turn-label">TURN</span>
+          <span class="turn-num" id="turn-display">1</span>
+          <span class="turn-max" id="turn-max-display">/ 30</span>
+        </div>
+        <div class="event-ticker" id="event-ticker">
+          <span class="ticker-label">MARKET</span>
+          <span class="ticker-text" id="ticker-text">Stable conditions</span>
+        </div>
+        <div class="interest-display">
+          <span class="interest-label">INTEREST</span>
+          <span class="interest-val" id="interest-display">5%</span>
+        </div>
+      </div>
+
+      <div class="board-wrap">
+        <div class="board" id="game-board"></div>
+      </div>
+
+      <!-- STOCK MARKET TICKER -->
+      <div class="stock-panel">
+        <div class="stock-header">📈 STOCK MARKET</div>
+        <div class="stock-tickers" id="stock-tickers"></div>
+      </div>
+    </div>
+
+    <!-- RIGHT: CONTROL PANEL -->
+    <div class="control-panel">
+
+      <!-- PLAYERS LIST -->
+      <div class="players-section">
+        <div class="section-title">PLAYERS</div>
+        <div id="players-list"></div>
+      </div>
+
+      <!-- ACTIVE PLAYER -->
+      <div class="active-section">
+        <div class="section-title">YOUR TURN</div>
+        <div class="active-player-card" id="active-player-card">
+          <div class="active-name" id="active-name">—</div>
+          <div class="active-type" id="active-type">—</div>
+          <div class="active-stats">
+            <div class="stat-pill">
+              <span class="stat-label">CASH</span>
+              <span class="stat-val" id="active-cash">$0</span>
+            </div>
+            <div class="stat-pill">
+              <span class="stat-label">NET WORTH</span>
+              <span class="stat-val" id="active-networth">$0</span>
+            </div>
+            <div class="stat-pill">
+              <span class="stat-label">DEBT</span>
+              <span class="stat-val danger" id="active-debt">$0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DICE -->
+      <div class="dice-section">
+        <div class="dice-wrap">
+          <div class="die" id="die1">?</div>
+          <div class="die" id="die2">?</div>
+        </div>
+        <div class="dice-total" id="dice-total"></div>
+      </div>
+
+      <!-- ACTION BUTTONS -->
+      <div class="actions-section">
+        <div class="section-title">ACTIONS</div>
+        <div class="action-grid">
+          <button class="action-btn primary" id="btn-roll">🎲 ROLL DICE</button>
+          <button class="action-btn" id="btn-buy" disabled>🏠 BUY PROPERTY</button>
+          <button class="action-btn" id="btn-loan">🏦 TAKE LOAN</button>
+          <button class="action-btn" id="btn-stocks">📊 BUY STOCKS</button>
+          <button class="action-btn" id="btn-sell-stocks">💹 SELL STOCKS</button>
+          <button class="action-btn end" id="btn-end" disabled>⏭ END TURN</button>
+        </div>
+      </div>
+
+      <!-- LOG -->
+      <div class="log-section">
+        <div class="section-title">GAME LOG</div>
+        <div class="log-box" id="game-log"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- EVENT MODAL -->
+<div class="modal-overlay" id="event-modal" style="display:none">
+  <div class="modal event-modal">
+    <div class="event-icon" id="event-icon">⚡</div>
+    <div class="event-type" id="event-type-text">ECONOMIC EVENT</div>
+    <div class="event-name" id="event-name-text">RECESSION</div>
+    <div class="event-desc" id="event-desc-text">Property values drop 20%</div>
+    <div class="event-effects" id="event-effects-text"></div>
+    <button class="btn-primary" id="event-close-btn">ACKNOWLEDGE</button>
+  </div>
+</div>
+
+<!-- PROPERTY MODAL -->
+<div class="modal-overlay" id="property-modal" style="display:none">
+  <div class="modal property-modal">
+    <div class="prop-district" id="prop-district">DISTRICT</div>
+    <div class="prop-name" id="prop-name">Property Name</div>
+    <div class="prop-details">
+      <div class="prop-stat"><span>PRICE</span><strong id="prop-price">$0</strong></div>
+      <div class="prop-stat"><span>RENT</span><strong id="prop-rent">$0</strong></div>
+      <div class="prop-stat"><span>DEMAND</span><strong id="prop-demand">Medium</strong></div>
+      <div class="prop-stat"><span>OWNER</span><strong id="prop-owner">Unowned</strong></div>
+    </div>
+    <div class="prop-actions">
+      <button class="btn-primary" id="prop-buy-confirm">PURCHASE →</button>
+      <button class="btn-secondary" id="prop-cancel">CANCEL</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOAN MODAL -->
+<div class="modal-overlay" id="loan-modal" style="display:none">
+  <div class="modal loan-modal">
+    <div class="modal-title">🏦 BANK LOAN</div>
+    <div class="loan-rate-info">Current Interest Rate: <strong id="loan-rate-text">5%</strong> per turn</div>
+    <div class="loan-existing" id="loan-existing-info"></div>
+    <div class="field-group">
+      <label>Loan Amount</label>
+      <input type="number" id="loan-amount" min="100" max="5000" step="100" value="500" />
+    </div>
+    <div class="loan-warning">⚠ Interest accrues each turn. Repay before game ends to avoid penalties.</div>
+    <div class="prop-actions">
+      <button class="btn-primary" id="loan-confirm">TAKE LOAN</button>
+      <button class="btn-secondary" id="loan-cancel">CANCEL</button>
+    </div>
+  </div>
+</div>
+
+<!-- STOCK MODAL -->
+<div class="modal-overlay" id="stock-modal" style="display:none">
+  <div class="modal stock-modal">
+    <div class="modal-title">📊 STOCK MARKET</div>
+    <div id="stock-list-modal"></div>
+    <div class="prop-actions">
+      <button class="btn-secondary" id="stock-close">CLOSE</button>
+    </div>
+  </div>
+</div>
+
+<!-- SELL STOCKS MODAL -->
+<div class="modal-overlay" id="sell-stock-modal" style="display:none">
+  <div class="modal stock-modal">
+    <div class="modal-title">💹 SELL STOCKS</div>
+    <div id="sell-stock-list"></div>
+    <div class="prop-actions">
+      <button class="btn-secondary" id="sell-stock-close">CLOSE</button>
+    </div>
+  </div>
+</div>
+
+<!-- END SCREEN -->
+<div id="end-screen" class="screen">
+  <div class="end-container">
+    <div class="end-title">GAME OVER</div>
+    <div class="end-sub">FINAL RANKINGS BY NET WORTH</div>
+    <div id="final-rankings"></div>
+    <button class="btn-primary big" id="play-again-btn">PLAY AGAIN</button>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
