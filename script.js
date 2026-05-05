@@ -338,37 +338,32 @@ function checkForEvent() {
    ═══════════════════════════════════════════════ */
 
 function renderBoard() {
+  function renderBoard() {
   const board = document.getElementById('game-board');
   board.innerHTML = '';
 
-  // 24 tiles around a 7×7 grid (perimeter = 24 cells exactly)
-  // Row 0: cols 0-6  (7 tiles) → tile 0-6   bottom row
-  // Col 6: rows 6-1  (6 tiles) → tile 7-12  right col
-  // Row 6: cols 6-0  (7 tiles, skip corner already done) — wait, let's map cleanly:
-  //
-  // We use a TRUE square Monopoly layout:
-  //   Bottom row  (row 6, col 0→6): tiles 0-6
-  //   Right col   (col 6, row 5→0): tiles 7-12
-  //   Top row     (row 0, col 6→0): tiles 13-18 (skip corners already placed)  — actually include corners
-  //   Left col    (col 0, row 1→5): tiles 19-23
-  //
-  // Perimeter of 7×7 = 4*6 = 24 ✓
-
   const SIZE = 7;
+
   board.style.display = 'grid';
   board.style.gridTemplateColumns = `repeat(${SIZE}, 1fr)`;
   board.style.gridTemplateRows = `repeat(${SIZE}, 1fr)`;
-  board.style.gap = '3px';
+  board.style.gap = '4px';
 
-  // Create all 49 cells
-  for (let r = 0; r < SIZE; r++) {
-    for (let c = 0; c < SIZE; c++) {
-      const cell = document.createElement('div');
-      board.appendChild(cell);
-    }
-  }
+  const tilePositions = [
+    [7,1],[7,2],[7,3],[7,4],[7,5],[7,6],[7,7],
+    [6,7],[5,7],[4,7],[3,7],[2,7],[1,7],
+    [1,6],[1,5],[1,4],[1,3],[1,2],[1,1],
+    [2,1],[3,1],[4,1],[5,1],[6,1],
+  ];
 
-    // Center area (rows 1-5, cols 1-5) — title panel
+  tilePositions.forEach(([row, col], idx) => {
+    const tileEl = document.createElement('div');
+    tileEl.style.gridRow = row;
+    tileEl.style.gridColumn = col;
+    renderTile(tileEl, G.tiles[idx], idx);
+    board.appendChild(tileEl);
+  });
+
   const centerPanel = document.createElement('div');
   centerPanel.className = 'board-center-panel';
   centerPanel.style.gridColumn = '2 / 7';
@@ -388,30 +383,7 @@ function renderBoard() {
   `;
 
   board.appendChild(centerPanel);
-
-  // Map tile index → grid cell position (clockwise from bottom-left corner)
-  // Bottom row left→right: (6,0),(6,1),(6,2),(6,3),(6,4),(6,5),(6,6) → tiles 0-6
-  // Right col bottom→top:  (5,6),(4,6),(3,6),(2,6),(1,6),(0,6)       → tiles 7-12
-  // Top row right→left:    (0,5),(0,4),(0,3),(0,2),(0,1),(0,0)       → tiles 13-18
-  // Left col top→bottom:   (1,0),(2,0),(3,0),(4,0),(5,0)             → tiles 19-23
-  const tilePositions = [
-    // Bottom row
-    [6,0],[6,1],[6,2],[6,3],[6,4],[6,5],[6,6],
-    // Right col (bottom to top, skipping corner)
-    [5,6],[4,6],[3,6],[2,6],[1,6],[0,6],
-    // Top row (right to left, skipping corner)
-    [0,5],[0,4],[0,3],[0,2],[0,1],[0,0],
-    // Left col (top to bottom, skipping corners)
-    [1,0],[2,0],[3,0],[4,0],[5,0],
-  ];
-
-  tilePositions.forEach(([row, col], idx) => {
-    const cellIdx = row * SIZE + col;
-    const cell = board.children[cellIdx];
-    renderTile(cell, BOARD_TILES[idx], idx);
-  });
 }
-
 function renderTile(cell, tile, idx) {
   const col = tile.district ? TILE_COLORS[tile.district] : null;
   const isOwned = tile.ownerId !== undefined;
