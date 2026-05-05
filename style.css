@@ -156,11 +156,11 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
   border: 1px solid var(--border);
   border-radius: 4px;
   background: var(--bg2);
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  cursor: pointer; transition: all .2s; position: relative; overflow: hidden;
-  text-align: center; padding: 3px;
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+  cursor: pointer; transition: border-color .2s, box-shadow .2s; position: relative; overflow: hidden;
+  text-align: center; padding: 4px 3px 28px;
 }
-.tile:hover { border-color: var(--muted); transform: scale(1.03); z-index: 5; }
+.tile:hover { border-color: var(--muted); z-index: 5; }
 
 .tile-color-bar {
   position: absolute; top: 0; left: 0; right: 0; height: 4px; border-radius: 4px 4px 0 0;
@@ -182,18 +182,19 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
 
 /* Player tokens on board */
 .player-token {
-  width: 14px; height: 14px; border-radius: 50%;
-  border: 2px solid rgba(255,255,255,.4);
+  width: 22px; height: 22px; border-radius: 50%;
+  border: 2px solid rgba(255,255,255,.6);
   display: flex; align-items: center; justify-content: center;
-  font-size: 7px; font-weight: 700; color: #000;
-  position: absolute; z-index: 10;
+  font-size: 10px; font-weight: 900; color: #000;
+  font-family: 'DM Mono', monospace;
   transition: all .4s cubic-bezier(.34,1.56,.64,1);
-  box-shadow: 0 2px 6px rgba(0,0,0,.5);
+  flex-shrink: 0;
 }
 .tokens-wrap {
-  display: flex; flex-wrap: wrap; gap: 1px;
-  position: absolute; bottom: 1px; left: 2px;
-  max-width: 90%;
+  display: flex; flex-wrap: wrap; gap: 2px;
+  position: absolute; bottom: 3px; left: 50%; transform: translateX(-50%);
+  justify-content: center;
+  z-index: 10;
 }
 
 /* ─── STOCK PANEL ───────────────────────────── */
