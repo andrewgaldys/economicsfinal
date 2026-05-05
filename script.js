@@ -341,74 +341,75 @@ function renderBoard() {
   const board = document.getElementById('game-board');
   board.innerHTML = '';
 
-  // Board layout: 24 tiles in a circle
-  // We'll use a 6×6 grid, placing tiles around the perimeter
-  // Perimeter of 6×6 = 4*5 = 20 cells — we have 24, so use 7×7 perimeter approach
-  // Actually: let's place tiles absolutely in a square ring
+  // 24 tiles around a 7×7 grid (perimeter = 24 cells exactly)
+  // Row 0: cols 0-6  (7 tiles) → tile 0-6   bottom row
+  // Col 6: rows 6-1  (6 tiles) → tile 7-12  right col
+  // Row 6: cols 6-0  (7 tiles, skip corner already done) — wait, let's map cleanly:
+  //
+  // We use a TRUE square Monopoly layout:
+  //   Bottom row  (row 6, col 0→6): tiles 0-6
+  //   Right col   (col 6, row 5→0): tiles 7-12
+  //   Top row     (row 0, col 6→0): tiles 13-18 (skip corners already placed)  — actually include corners
+  //   Left col    (col 0, row 1→5): tiles 19-23
+  //
+  // Perimeter of 7×7 = 4*6 = 24 ✓
 
-  const n = TOTAL_TILES; // 24
-  board.style.position = 'relative';
-  board.style.display = 'block';
-
-  // Build grid positions for 24 tiles around a 7×7 grid perimeter
-  // Perimeter positions going clockwise: bottom-left→right, right col bottom→top, top right→left, left col top→bottom
-  const SIZE = 7; // grid dimension
-  const positions = getPerimeterPositions(SIZE, n);
-
+  const SIZE = 7;
   board.style.display = 'grid';
   board.style.gridTemplateColumns = `repeat(${SIZE}, 1fr)`;
   board.style.gridTemplateRows = `repeat(${SIZE}, 1fr)`;
+  board.style.gap = '3px';
 
-  // Fill entire grid with empty cells first
+  // Create all 49 cells
   for (let r = 0; r < SIZE; r++) {
     for (let c = 0; c < SIZE; c++) {
       const cell = document.createElement('div');
-      cell.style.borderRadius = '4px';
       board.appendChild(cell);
     }
   }
 
-  // Center cell — game title
-  const center = board.children[Math.floor(SIZE/2) * SIZE + Math.floor(SIZE/2)];
-  center.style.background = 'var(--bg3)';
-  center.style.border = '1px solid var(--border)';
-  center.style.borderRadius = '8px';
-  center.style.display = 'flex';
-  center.style.flexDirection = 'column';
-  center.style.alignItems = 'center';
-  center.style.justifyContent = 'center';
-  center.style.gridColumn = '3 / 6';
-  center.style.gridRow = '3 / 6';
-  center.innerHTML = `
-    <div style="font-family:'Bebas Neue',sans-serif;font-size:clamp(18px,2.5vw,28px);color:var(--accent);letter-spacing:3px;line-height:1">ECONOPOLY</div>
-    <div style="font-family:'DM Mono',monospace;font-size:8px;color:var(--muted);margin-top:6px;letter-spacing:2px">TURN ${G.turn}/${G.maxTurns}</div>
+  // Center area (rows 1-5, cols 1-5) — title panel
+  const centerCell = board.children[1 * SIZE + 1];
+  centerCell.style.cssText = `
+    grid-column: 2 / 7; grid-row: 2 / 7;
+    background: var(--bg3); border: 1px solid var(--border); border-radius: 10px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 10px;
+  `;
+  centerCell.innerHTML = `
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:clamp(20px,2.8vw,34px);color:var(--accent);letter-spacing:4px;line-height:1">ECONOPOLY</div>
+    <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px">TURN ${G.turn} / ${G.maxTurns}</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;padding:0 12px">
+      ${G.players.map(p => `
+        <div style="display:flex;align-items:center;gap:5px;background:var(--bg);border:1px solid ${p.colorHex};border-radius:6px;padding:4px 8px">
+          <div style="width:12px;height:12px;border-radius:50%;background:${p.colorHex}"></div>
+          <span style="font-family:'DM Mono',monospace;font-size:9px;color:${p.colorHex}">${p.name.split(' ')[0]}</span>
+        </div>
+      `).join('')}
+    </div>
   `;
 
-  // Place tiles at perimeter positions
-  positions.forEach(({ row, col }, idx) => {
-    const tileData = BOARD_TILES[idx];
+  // Map tile index → grid cell position (clockwise from bottom-left corner)
+  // Bottom row left→right: (6,0),(6,1),(6,2),(6,3),(6,4),(6,5),(6,6) → tiles 0-6
+  // Right col bottom→top:  (5,6),(4,6),(3,6),(2,6),(1,6),(0,6)       → tiles 7-12
+  // Top row right→left:    (0,5),(0,4),(0,3),(0,2),(0,1),(0,0)       → tiles 13-18
+  // Left col top→bottom:   (1,0),(2,0),(3,0),(4,0),(5,0)             → tiles 19-23
+  const tilePositions = [
+    // Bottom row
+    [6,0],[6,1],[6,2],[6,3],[6,4],[6,5],[6,6],
+    // Right col (bottom to top, skipping corner)
+    [5,6],[4,6],[3,6],[2,6],[1,6],[0,6],
+    // Top row (right to left, skipping corner)
+    [0,5],[0,4],[0,3],[0,2],[0,1],[0,0],
+    // Left col (top to bottom, skipping corners)
+    [1,0],[2,0],[3,0],[4,0],[5,0],
+  ];
+
+  tilePositions.forEach(([row, col], idx) => {
     const cellIdx = row * SIZE + col;
     const cell = board.children[cellIdx];
-    renderTile(cell, tileData, idx);
+    renderTile(cell, BOARD_TILES[idx], idx);
   });
-}
-
-function getPerimeterPositions(size, count) {
-  // Go around the perimeter clockwise starting from bottom-left
-  const positions = [];
-  const s = size - 1; // 6
-
-  // Bottom row: left→right (row=s, col=0..s)
-  for (let c = 0; c <= s; c++) positions.push({ row: s, col: c });
-  // Right col: bottom-1→top (row=s-1..0, col=s)
-  for (let r = s - 1; r >= 0; r--) positions.push({ row: r, col: s });
-  // Top row: right-1→left (row=0, col=s-1..0)
-  for (let c = s - 1; c >= 0; c--) positions.push({ row: 0, col: c });
-  // Left col: 1→bottom-1 (row=1..s-1, col=0)
-  for (let r = 1; r <= s - 1; r++) positions.push({ row: r, col: 0 });
-
-  // Take first `count`
-  return positions.slice(0, count);
 }
 
 function renderTile(cell, tile, idx) {
@@ -447,11 +448,22 @@ function renderTile(cell, tile, idx) {
   let tokens = '';
   if (playersHere.length > 0) {
     tokens = `<div class="tokens-wrap">` +
-      playersHere.map(p => `<div class="player-token" style="background:${p.colorHex}">${p.id+1}</div>`).join('') +
+      playersHere.map(p => `
+        <div class="player-token" style="background:${p.colorHex};box-shadow:0 0 7px ${p.colorHex},0 2px 4px rgba(0,0,0,.7)">
+          ${p.id + 1}
+        </div>`).join('') +
     `</div>`;
   }
 
   cell.className = classes;
+  // Glow the tile border in the player's color when occupied
+  if (playersHere.length > 0) {
+    cell.style.borderColor = playersHere[0].colorHex;
+    cell.style.boxShadow = `inset 0 0 12px ${playersHere[0].colorHex}44`;
+  } else {
+    cell.style.borderColor = '';
+    cell.style.boxShadow = '';
+  }
   cell.innerHTML = content + tokens;
   cell.title = tile.name + (tile.price ? ` — $${tile.price}` : '');
 
